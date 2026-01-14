@@ -91,4 +91,35 @@ llama-server -m model/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf --mmproj model/mmproj-Q
 
 在 Intel i7 13代 CPU 下运行，每次分析平均 1500 毫秒。
 
+## 常见问题
 
+### Q: 为什么推理速度比较慢？
+A: 推理速度取决于硬件配置。GPU 模式下 RTX 2080 约 700ms/次，CPU 模式约 1500ms/次。如需更快速度，建议使用更强的显卡或降低模型量化级别。
+
+### Q: 如何切换 GPU 和 CPU 模式？
+A: 启动 llama-server 时，使用 `-ngl 99` 启用 GPU，使用 `-ngl 0` 仅使用 CPU。
+
+### Q: 模型文件应该放在哪里？
+A: 模型文件应放在 `llama-b7728-bin-win-cpu-x64/model` 目录下。
+
+### Q: 摄像头权限被拒绝怎么办？
+A: 请在浏览器设置中允许摄像头访问权限，或检查系统隐私设置。
+
+## 致谢
+
+- [llama.cpp](https://github.com/ggml-org/llama.cpp) - 高效的 LLM 推理框架
+- [Qwen2.5-VL](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct) - 视觉语言模型
+- [Hugging Face](https://huggingface.co/) - 模型托管平台
+
+## 许可证
+
+本项目采用 MIT 许可证开源。
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 联系方式
+
+- GitHub: [marsoyang1](https://github.com/marsoyang1)
+- 项目地址: [localVllm-realtime-webcam](https://github.com/marsoyang1/localVllm-realtime-webcam)
