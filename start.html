@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Interaction App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .mainContent {
+            display: flex;
+            flex-direction: row;
+            gap: 25px;
+            flex: 1;
+            align-items: flex-start;
+        }
+        .rightPanel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            margin: 0;
+            letter-spacing: 2px;
+        }
+        .io-areas {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .io-areas > div {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .io-areas > div:last-child {
+            flex: 1;
+            display: flex;
+        }
+        label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background-color: #f9fafb;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea {
+            min-height: 80px;
+            resize: none;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+        .videoPanel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        #videoFeed {
+            width: 480px;
+            height: 360px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+            padding: 15px;
+            background-color: #f3f4f6;
+            border-radius: 10px;
+        }
+        .controls label {
+            margin-bottom: 0;
+        }
+        .controls select {
+            flex: 1;
+            max-width: 200px;
+            background-color: #fff;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            outline: none;
+            padding: 0;
+            margin: 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border: none;
+            transition: all 0.2s ease;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        input[type="range"]:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #startButton {
+            padding: 12px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        #startButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+        #startButton:active {
+            transform: translateY(0);
+        }
+        #startButton.start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        #startButton.stop {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .hidden {
+            display: none;
+        }
+        #historyContainer {
+            max-height: 350px;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        #historyContainer::-webkit-scrollbar {
+            width: 6px;
+        }
+        #historyContainer::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        #historyContainer::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+        .historyItem {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .historyItem:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+        .historyItem:last-child {
+            margin-bottom: 0;
+        }
+        .historyTimestamp {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .historyTimestamp::before {
+            content: '🕐';
+        }
+        .statsPanel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .statsTitle {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        .statsGrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .statItem {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .statValue {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .statLabel {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .statsList {
+            max-height: 250px;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .statsList::-webkit-scrollbar {
+            width: 6px;
+        }
+        .statsList::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        .statsList::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+        .timeItem {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .timeItem:last-child {
+            margin-bottom: 0;
+        }
+        .timeValue {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .fast {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .slow {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>智眼互动</h1>
+    </div>
+
+    <div class="mainContent">
+        <div class="io-areas">
+            <div>
+                <label for="baseURL">Base API:</label><br>
+                <input id="baseURL" name="Instruction" value="http://127.0.0.1:8000"></textarea>
+            </div>
+            <div>
+                <label for="instructionText">Instruction:</label><br>
+                <textarea id="instructionText" name="Instruction"></textarea>
+            </div>
+            <div>
+                <label for="responseText">Response:</label><br>
+                <textarea id="responseText" name="Response" readonly placeholder="Server response will appear here..."></textarea>
+            </div>
+            <div>
+                <label>History (Last 10):</label><br>
+                <div id="historyContainer"></div>
+            </div>
+        </div>
+
+        <div class="rightPanel">
+            <div class="videoPanel">
+                <video id="videoFeed" autoplay playsinline></video>
+                <canvas id="canvas" class="hidden"></canvas>
+
+                <div class="controls">
+                    <label for="intervalSlider">Interval:</label>
+                    <input type="range" id="intervalSlider" min="100" max="20000" step="100" value="500" style="flex: 1;">
+                    <span id="intervalValue" style="min-width: 60px; text-align: center; font-weight: 500;">500ms</span>
+                    <button id="startButton" class="start">Start</button>
+                </div>
+            </div>
+
+            <div class="statsPanel">
+                <div class="statsTitle">识别响应时间统计</div>
+                <div class="statsGrid">
+                    <div class="statItem">
+                        <div class="statValue" id="avgTime">-</div>
+                        <div class="statLabel">平均响应时间</div>
+                    </div>
+                    <div class="statItem">
+                        <div class="statValue" id="count">-</div>
+                        <div class="statLabel">识别次数</div>
+                    </div>
+                    <div class="statItem">
+                        <div class="statValue" id="minTime">-</div>
+                        <div class="statLabel">最快响应</div>
+                    </div>
+                    <div class="statItem">
+                        <div class="statValue" id="maxTime">-</div>
+                        <div class="statLabel">最慢响应</div>
+                    </div>
+                </div>
+                <div class="statsList" id="timeList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('canvas');
+        const baseURL = document.getElementById('baseURL');
+        const instructionText = document.getElementById('instructionText');
+        const responseText = document.getElementById('responseText');
+        const intervalSlider = document.getElementById('intervalSlider');
+        const intervalValue = document.getElementById('intervalValue');
+        const startButton = document.getElementById('startButton');
+        const historyContainer = document.getElementById('historyContainer');
+
+        instructionText.value = "What do you see?"; // default instruction
+
+        let stream;
+        let intervalId;
+        let isProcessing = false;
+        let history = []; // Store history
+        let responseTimes = []; // Store response times
+
+        function formatInterval(ms) {
+            if (ms >= 1000) {
+                return (ms / 1000).toFixed(1) + 's';
+            }
+            return ms + 'ms';
+        }
+
+        intervalSlider.addEventListener('input', () => {
+            intervalValue.textContent = formatInterval(intervalSlider.value);
+        });
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function addToHistory(response) {
+            const timestamp = new Date().toLocaleTimeString();
+            history.unshift({ timestamp, response });
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            historyContainer.innerHTML = '';
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'historyItem';
+                div.innerHTML = `
+                    <div class="historyTimestamp">${item.timestamp}</div>
+                    <div>${item.response}</div>
+                `;
+                historyContainer.appendChild(div);
+            });
+        }
+
+        instructionText.addEventListener('input', () => autoResize(instructionText));
+        responseText.addEventListener('input', () => autoResize(responseText));
+
+        function updateStats(time) {
+            responseTimes.push(time);
+
+            const avg = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+            const min = Math.min(...responseTimes);
+            const max = Math.max(...responseTimes);
+
+            document.getElementById('avgTime').textContent = avg.toFixed(2) + 'ms';
+            document.getElementById('count').textContent = responseTimes.length;
+            document.getElementById('minTime').textContent = min.toFixed(2) + 'ms';
+            document.getElementById('maxTime').textContent = max.toFixed(2) + 'ms';
+
+            const timeList = document.getElementById('timeList');
+            const timeItem = document.createElement('div');
+            timeItem.className = 'timeItem';
+            const timestamp = new Date().toLocaleTimeString();
+            timeItem.innerHTML = `
+                <span>${timestamp}</span>
+                <span class="timeValue">${time.toFixed(2)}ms</span>
+            `;
+            timeList.insertBefore(timeItem, timeList.firstChild);
+
+            if (timeList.children.length > 20) {
+                timeList.removeChild(timeList.lastChild);
+            }
+        }
+
+        // Returns response text (string)
+        async function sendChatCompletionRequest(instruction, imageBase64URL) {
+            const response = await fetch(`${baseURL.value}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    max_tokens: 100,
+                    messages: [
+                        { role: 'user', content: [
+                            { type: 'text', text: instruction },
+                            { type: 'image_url', image_url: {
+                                url: imageBase64URL,
+                            } }
+                        ] },
+						{ role: 'system',
+						  content: '你是一个智能摄像头，你的任务是把你所见通过文字描述出来。请注意：你只能使用中文进行回答。'
+						}
+                    ]
+                })
+            });
+            if (!response.ok) {
+                const errorData = await response.text();
+                return `Server error: ${response.status} - ${errorData}`;
+            }
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        // 1. Ask for camera permission on load
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = stream;
+                responseText.value = "Camera access granted. Ready to start.";
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                responseText.value = `Error accessing camera: ${err.name} - ${err.message}. Please ensure permissions are granted and you are on HTTPS or localhost.`;
+                alert(`Error accessing camera: ${err.name}. Make sure you've granted permission and are on HTTPS or localhost.`);
+            }
+        }
+
+        function captureImage() {
+            if (!stream || !video.videoWidth) {
+                console.warn("Video stream not ready for capture.");
+                return null;
+            }
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.8); // Use JPEG for smaller size, 0.8 quality
+        }
+
+        async function sendData() {
+            if (!isProcessing) return;
+
+            const startTime = performance.now();
+            const instruction = instructionText.value;
+            const imageBase64URL = captureImage();
+
+            if (!imageBase64URL) {
+                responseText.value = "Failed to capture image. Stream might not be active.";
+                return;
+            }
+
+            const payload = {
+                instruction: instruction,
+                imageBase64URL: imageBase64URL
+            };
+
+            try {
+                const response = await sendChatCompletionRequest(payload.instruction, payload.imageBase64URL);
+                const endTime = performance.now();
+                const responseTime = endTime - startTime;
+
+                responseText.value = response;
+                autoResize(responseText);
+                addToHistory(response);
+                updateStats(responseTime);
+            } catch (error) {
+                console.error('Error sending data:', error);
+                responseText.value = `Error: ${error.message}`;
+                autoResize(responseText);
+            }
+        }
+
+        function handleStart() {
+            if (!stream) {
+                responseText.value = "Camera not available. Cannot start.";
+                alert("Camera not available. Please grant permission first.");
+                return;
+            }
+            isProcessing = true;
+            startButton.textContent = "Stop";
+            startButton.classList.remove('start');
+            startButton.classList.add('stop');
+
+            instructionText.disabled = true;
+            intervalSlider.disabled = true;
+
+            responseText.value = "Processing started...";
+
+            const intervalMs = parseInt(intervalSlider.value, 10);
+
+            // Initial immediate call
+            sendData();
+
+            // Then set interval
+            intervalId = setInterval(sendData, intervalMs);
+        }
+
+        function handleStop() {
+            isProcessing = false;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            startButton.textContent = "Start";
+            startButton.classList.remove('stop');
+            startButton.classList.add('start');
+
+            instructionText.disabled = false;
+            intervalSlider.disabled = false;
+            if (responseText.value.startsWith("Processing started...")) {
+                responseText.value = "Processing stopped.";
+            }
+        }
+
+        startButton.addEventListener('click', () => {
+            if (isProcessing) {
+                handleStop();
+            } else {
+                handleStart();
+            }
+        });
+
+        // Initialize camera when the page loads
+        window.addEventListener('DOMContentLoaded', initCamera);
+
+        // Optional: Stop stream when page is closed/navigated away to release camera
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        });
+
+    </script>
+</body>
+</html>
